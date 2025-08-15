@@ -1,0 +1,80 @@
+
+
+Naruto Bingo Book Project - ERD Description
+
+This file explains the structure and relationships used in the Naruto Bingo Book data model.
+
+Main Concepts Modeled:
+-----------------------
+
+1. USERS:
+   Represents app users. Each user can own multiple shinobi records.
+   - One-to-many: User → Shinobi
+
+2. NATIONS & VILLAGES:
+   Nations contain multiple villages.
+   - One-to-many: Nation → Villages
+
+3. VILLAGES:
+   Each village belongs to a nation.
+   Each village can have many shinobi and a unique kage (linked to a shinobi).
+   - One-to-many: Village → Shinobi
+   - One-to-one: Village ↔ Kage (via `kage_id` FK)
+
+4. SHINOBI:
+   Central entity representing each ninja. Each shinobi:
+   - Belongs to a user
+   - Belongs to a village
+   - Has a one-to-one ThreatProfile
+   - Can have many missions
+   - Can have many jutsu via `ShinobiJutsu`
+   - Can belong to teams via `TeamMember`
+
+5. THREAT PROFILES:
+   One-to-one relationship with Shinobi.
+   - One-to-one: Shinobi ↔ ThreatProfile
+
+6. JUTSU:
+   Techniques and skills. Stored separately.
+   - Many-to-many: Shinobi ↔ Jutsu (via `ShinobiJutsu`)
+   - Includes `type`, `element`, `difficulty_rank`, etc.
+
+7. SHINOBI_JUTSU:
+   Junction table linking shinobi to jutsu with added metadata like `mastery_level`.
+
+8. MISSIONS:
+   Missions are assigned to individual shinobi.
+   - One-to-many: Shinobi → Missions
+
+9. TEAMS & TEAM MEMBERS:
+   Teams contain multiple shinobi.
+   - One-to-many: Team → TeamMember
+   - Many-to-many: Shinobi ↔ Team (via `TeamMember`)
+   - Each team has a leader (shinobi) and may belong to a village
+
+Relationships Summary:
+-----------------------
+- One-to-One:
+  - Village ↔ Kage (linked to a Shinobi)
+  - Shinobi ↔ ThreatProfile
+
+- One-to-Many:
+  - User → Shinobi
+  - Nation → Villages
+  - Village → Shinobi
+  - Shinobi → Missions
+  - Team → TeamMember
+
+- Many-to-Many:
+  - Shinobi ↔ Jutsu (via ShinobiJutsu)
+  - Shinobi ↔ Team (via TeamMember)
+
+Goal:
+-----
+To provide a normalized, scalable backend data structure for a Naruto-themed application, supporting user-owned ninja records, nations, villages, shinobi data, jutsu techniques, missions, and team affiliations.
+
+Generated ERD:
+--------------
+The `naruto_bingo_book_ERD.png` file visualizes this schema. Use it for modeling and implementation.
+
+End of Description.
