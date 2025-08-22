@@ -63,4 +63,4 @@ class Shinobi(db.Model):
 class Jutsu(db.Model):
     __tablename__ = 'jutsu'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100),
+    name = db.Column(db.String(100)),
