@@ -4,6 +4,7 @@
 from flask import Blueprint, request, jsonify
 from app.models.village import Village
 from app.schemas.village_schema import VillageSchema
+from util.reflection import populate_object
 from extensions import db
 
 village_bp = Blueprint('village', __name__, url_prefix='/api/villages')
@@ -32,8 +33,9 @@ def create_village():
 def update_village(id):
     village = Village.query.get_or_404(id)
     data = request.get_json()
-    for key, value in data.items():
-        setattr(village, key, value)
+    error_response = populate_object(village, data)
+    if error_response: 
+        return error_response, 400
     db.session.commit()
     return village_schema.jsonify(village)
 

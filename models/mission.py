@@ -1,7 +1,7 @@
 
 
 
-from extensions import db
+from extensions import db, ma
 
 class Mission(db.Model):
     __tablename__ = 'missions'
@@ -18,3 +18,11 @@ class Mission(db.Model):
 
     def __repr__(self):
         return f"<Mission id={self.id} title='{self.title}' rank='{self.rank}' status='{self.status}'>"
+
+class MissionSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Mission
+        load_instance = True
+
+mission_schema = MissionSchema()
+missions_schema = MissionSchema(many=True)

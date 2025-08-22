@@ -1,7 +1,7 @@
 
 
 
-from app.extensions import db
+from extensions import db, ma
 
 class Jutsu(db.Model):
     __tablename__ = 'jutsu'
@@ -16,4 +16,12 @@ class Jutsu(db.Model):
     def __repr__(self):
         return f"<Jutsu id={self.id} name='{self.name}' type='{self.type}' element='{self.element}' difficulty='{self.difficulty_rank}'>"
 
+class JutsuSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Jutsu
+        load_instance = True
+        include_fk = True
+
+jutsu_schema = JutsuSchema()
+jutsus_schema = JutsuSchema(many=True)
 

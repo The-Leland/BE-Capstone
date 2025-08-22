@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify
 from app.models.village import Village
 from app.schemas.village_schema import VillageSchema
 from extensions import db
+from util.reflection import populate_object
 
 village_bp = Blueprint('village', __name__, url_prefix='/villages')
 
@@ -32,9 +33,14 @@ def create_village():
 def update_village(village_id):
     village = Village.query.get_or_404(village_id)
     data = request.json
-    for key, value in data.items():
-        setattr(village, key, value)
-    db.session.commit()
+    res = populate_object(village, data)
+    if res is not None:
+        return res, 400
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        return jsonify({"message": "unable to update record"}), 400
     return jsonify(village_schema.dump(village))
 
 @village_bp.route('/<int:village_id>', methods=['DELETE'])
@@ -43,4 +49,3 @@ def delete_village(village_id):
     db.session.delete(village)
     db.session.commit()
     return jsonify({'message': 'Village deleted'})
-

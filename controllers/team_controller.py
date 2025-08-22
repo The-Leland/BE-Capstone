@@ -6,6 +6,7 @@ from app.models.team import Team
 from app.schemas.team_schema import TeamSchema
 from extensions import db
 from marshmallow import ValidationError
+from util.reflection import populate_object
 
 team_bp = Blueprint('team', __name__, url_prefix='/teams')
 
@@ -15,12 +16,12 @@ teams_schema = TeamSchema(many=True)
 @team_bp.route('/', methods=['GET'])
 def get_teams():
     teams = Team.query.all()
-    return jsonify(teams_schema.dump(teams))
+    return jsonify(teams_schema.dump(teams)), 200
 
 @team_bp.route('/<int:team_id>', methods=['GET'])
 def get_team(team_id):
     team = Team.query.get_or_404(team_id)
-    return jsonify(team_schema.dump(team))
+    return jsonify(team_schema.dump(team)), 200
 
 @team_bp.route('/', methods=['POST'])
 def create_team():
@@ -30,7 +31,11 @@ def create_team():
     except ValidationError as err:
         return jsonify({'errors': err.messages}), 400
     db.session.add(new_team)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({'message': 'unable to create team'}), 400
     return jsonify(team_schema.dump(new_team)), 201
 
 @team_bp.route('/<int:team_id>', methods=['PUT'])
@@ -41,14 +46,23 @@ def update_team(team_id):
         updated_data = team_schema.load(data, partial=True)
     except ValidationError as err:
         return jsonify({'errors': err.messages}), 400
-    for key, value in updated_data.items():
-        setattr(team, key, value)
-    db.session.commit()
-    return jsonify(team_schema.dump(team))
+    resp = populate_object(team, updated_data)
+    if resp:
+        return resp, 400
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({'message': 'unable to update team'}), 400
+    return jsonify(team_schema.dump(team)), 200
 
 @team_bp.route('/<int:team_id>', methods=['DELETE'])
 def delete_team(team_id):
     team = Team.query.get_or_404(team_id)
     db.session.delete(team)
-    db.session.commit()
-    return jsonify({'message': 'Team deleted'})
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({'message': 'unable to delete team'}), 400
+    return jsonify({'message': 'Team deleted'}), 200
